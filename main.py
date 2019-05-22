@@ -102,11 +102,11 @@ class Twitter:
       try:
         with self.get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute('UPDATE twitter_user SET my_friend=True WHERE id=%s', [user_id])
+                cur.execute('UPDATE twitter_user SET following_date=current_timestamp WHERE id=%s', [user_id])
                 print("{}をフォローしました".format(user_name))
       except:
         print("UPDATE出来ませんでした")
-      sleep(np.random.normal(600,60))
+      sleep(np.random.normal(300,60))
 
 
 
