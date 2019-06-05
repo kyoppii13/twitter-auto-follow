@@ -225,7 +225,6 @@ class Twitter:
         with conn.cursor() as cur:
           for user_id in self_remove_follow:
             cur.execute('UPDATE twitter_user SET no_target=True WHERE id=%s', [user_id])
-            print(user_id)
           print("フォローの差分UPDATE完了")
     except:
       print("フォローの差分UPDATE出来ませんでした")
@@ -238,7 +237,7 @@ class Twitter:
         with conn.cursor() as cur:
           # 3日前より前にフォロー
           # 自分でフォローしたのはfollowing_dateが空
-          cur.execute("SELECT * FROM twitter_user WHERE following_date < now() - interval '3 day' and followed=False and no_target")
+          cur.execute("SELECT * FROM twitter_user WHERE following_date < now() - interval '3 day' and followed=False AND no_target=False")
           rows = cur.fetchall()
 
 
