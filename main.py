@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 import requests
 from requests_oauthlib import OAuth1
 import psycopg2
-from psycopg2.extensions import QueryCanceledError
-from datetime import datetime, timedelta
+from psycopg2.extensions import QueryCanceledError 
+from datetime import datetime, timedelta 
 from time import sleep
 import numpy as np
 import argparse
@@ -14,7 +14,7 @@ import re
 import pickle
 import pandas as pd
 
-# create table twitter_user (id bigserial PRIMARY KEY, name text, screen_name text, description text, url text, followers_count integer, follows_count integer);
+# create table twitter_user (id bigserial PRIMARY KEY, name text, screen_name text, description text, url text, followers_count integer, follows_count integer, tweet text, no_target boolean, follow_date timestamp, followed boolean);
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
@@ -132,10 +132,10 @@ class Twitter:
     payload = {'user_id': user_id}
     return requests.post(url, auth=self.auth, data=payload)
 
-  def create_follow(self, max_count=100):
+  def create_follow(self, max_count=200):
     with self.get_connection() as conn:
       with conn.cursor() as cur:
-        cur.execute('SELECT * FROM twitter_user WHERE following_date is NULL')
+        cur.execute('SELECT * FROM twitter_user WHERE follow_date is NULL')
         rows = cur.fetchall()
     if len(rows) < max_count:
       max_count = len(rows)
@@ -155,7 +155,7 @@ class Twitter:
       try:
         with self.get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute('UPDATE twitter_user SET following_date=current_timestamp WHERE id=%s', [user_id])
+                cur.execute('UPDATE twitter_user SET follow_date=current_timestamp WHERE id=%s', [user_id])
                 print("{}をフォローしました".format(user_name))
       except:
         print("UPDATE出来ませんでした")
@@ -232,12 +232,12 @@ class Twitter:
       json.dump(users, f)
     print("フォローアップデート完了")
 
-  def destroy_follow(self, max_count=150):
+  def destroy_follow(self, max_count=300):
     with self.get_connection() as conn:
         with conn.cursor() as cur:
           # 3日前より前にフォロー
-          # 自分でフォローしたのはfollowing_dateが空
-          cur.execute("SELECT * FROM twitter_user WHERE following_date < now() - interval '3 day' and followed=False AND no_target=False")
+          # 自分でフォローしたのはfollow_dateが空
+          cur.execute("SELECT * FROM twitter_user WHERE follow_date < now() - interval '3 day' and followed=False AND no_target=False")
           rows = cur.fetchall()
 
 
@@ -305,6 +305,6 @@ if __name__ == '__main__':
   parser.add_argument('--get-follow-follower', action='store_false')
   args = parser.parse_args()
   # 1日1回実行
-  twitter = Twitter(args.keywords, args.get_tweet, args.create_follow, args.destroy_follow, args.pd_update, args.get_follow_follower) # 優先的に取る人決めたい
+  twitter = Twitter(args.keywords, args.get_tweet, args.create_follow, args.destroy_follow, args.pd_update, args.get_follow_follower)
   # 100人までフォロー
-
+  # TODO:優先的に取る人決めたい
